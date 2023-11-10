@@ -28,7 +28,7 @@ def page_rank(G, d=0.95, alpha=6, tol=1e-2, max_iter=100):
     for it in range(max_iter):
         old_pr = pr[:]
         exp_pr = np.exp(alpha*pr)
-        transition_matrix = matrix * exp_pr
+        transition_matrix = matrix * exp_pr.reshape(1, -1)
         transition_matrix = transition_matrix/transition_matrix.sum(axis=0)
         pr = transition_matrix.dot(pr)
         yield nodes, pr, it
