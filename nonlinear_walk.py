@@ -28,7 +28,8 @@ class NonlinearRandomWalk:
 
         self.ax = None
         self.alphas = None
-        self.results = None
+        self.prs = None
+        self.old_prs = None
 
     def simulate(self, alpha=1, d=1.0, tol=1e-2, max_iter=100):
         """Generator of the probabilities of the nodes in the graph for nonlinear random walk.
@@ -56,7 +57,7 @@ class NonlinearRandomWalk:
             err = np.absolute(pr - old_pr).sum()
             if err < tol:
                 break
-        return pr.reshape(-1)
+        return pr.reshape(-1), old_pr.reshape(-1)
     
     def _update(self, r):
         res_nodes, res_values, it = r
@@ -111,12 +112,16 @@ class NonlinearRandomWalk:
         :param int max_iter: max number of iterations
         """
         self.alphas = np.linspace(min_alpha, max_alpha, num_alpha)
-        self.results = np.zeros((num_alpha, self.N))
+        self.prs = np.zeros((num_alpha, self.N), dtype=float)
+        self.old_prs = np.full((num_alpha, self.N), fill_value=-1, dtype=float)
         for i, alpha in enumerate(self.alphas):
             generator = GeneratorWrapper(self.simulate(alpha, d, tol, max_iter))
             for _ in generator:
                 pass
-            self.results[i, :] = generator.value
+            pr, old_pr = generator.value
+            self.prs[i, :] = pr
+            if np.sum(np.abs(pr - old_pr)) > tol:
+                self.old_prs[i, :] = old_pr
 
     def plot_for_alphas(self, nodes_to_plot=None, filename=None):
         """Plot the probabilities of the nodes in the graph for nonlinear random walk for different values of alpha.
@@ -124,7 +129,7 @@ class NonlinearRandomWalk:
         :param list nodes_to_plot: the list of indices of nodes to plot
         :param str filename: the filename of the plot
         """
-        if self.alphas is None or self.results is None:
+        if self.alphas is None or self.prs is None:
             raise ValueError("Please run calculate_for_alphas() first.")
 
         if nodes_to_plot is None:
@@ -132,7 +137,11 @@ class NonlinearRandomWalk:
 
         plt.figure()
         for node in nodes_to_plot:
-            plt.scatter(self.alphas, self.results[:, node], label=f"{node} - {self.nodes[node]}", s=3)
+            mask = (self.old_prs[:, node] >= 0).reshape(-1)
+            alphas = np.r_[self.alphas, self.alphas[mask]]
+            prs = np.r_[self.prs[:, node], self.old_prs[mask, node]]
+
+            plt.scatter(alphas, prs, label=f"{node} - {self.nodes[node]}", s=3)
         plt.legend()
         plt.xlabel(r"$\alpha$")
         plt.ylabel("Probability")
