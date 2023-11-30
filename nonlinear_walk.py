@@ -51,7 +51,7 @@ class NonlinearRandomWalk:
             exp_pr = np.exp(alpha*pr)
             transition_matrix = self.matrix.T * exp_pr.reshape(-1, 1)
             transition_matrix = transition_matrix/transition_matrix.sum(axis=0)
-            pr = transition_matrix @ pr
+            pr = d * (transition_matrix @ pr) + (1-d)/self.N
             yield self.nodes, pr, it
             err = np.absolute(pr - old_pr).sum()
             if err < tol:

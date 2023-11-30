@@ -4,12 +4,11 @@ from matplotlib.animation import FuncAnimation
 import networkx as nx
 
 
-def page_rank(G, d=0.95, alpha=6, tol=1e-2, max_iter=100):
+def page_rank(G, d=0.95, tol=1e-2, max_iter=100):
     """Return the PageRank of the nodes in the graph.
 
     :param dict G: the graph
     :param float d: the damping factor
-    :param float alpha: the alpha parameter
     :param flat tol: tolerance to determine algorithm convergence
     :param int max_iter: max number of iterations
     """
@@ -27,10 +26,7 @@ def page_rank(G, d=0.95, alpha=6, tol=1e-2, max_iter=100):
 
     for it in range(max_iter):
         old_pr = pr[:]
-        exp_pr = np.exp(alpha*pr)
-        transition_matrix = matrix * exp_pr.reshape(1, -1)
-        transition_matrix = transition_matrix/transition_matrix.sum(axis=0)
-        pr = transition_matrix.dot(pr)
+        pr = d * weight.dot(pr) + (1-d)/N
         yield nodes, pr, it
         err = np.absolute(pr - old_pr).sum()
         if err < tol:
@@ -59,7 +55,7 @@ def update(r):
 
 
 G = nx.karate_club_graph()
-pos = nx.spring_layout(G)
+pos = nx.circular_layout(G)
 
 f, ax = plt.subplots()
 ani = FuncAnimation(
@@ -70,4 +66,4 @@ ani = FuncAnimation(
     blit=True
 )
 f.suptitle(f"  Page Rank")
-ani.save("gifs/graph_pr_2223.gif", writer='imagemagick')
+ani.save("gifs/graph_pr.gif", writer='imagemagick')
