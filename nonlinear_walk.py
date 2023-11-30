@@ -101,7 +101,7 @@ class NonlinearRandomWalk:
             filename = f"nonlinear_random_walk-{datetime.now().isoformat()}.gif"
         ani.save(f"gifs/{filename}", writer='imagemagick')
 
-    def calculate_for_alphas(self, min_alpha=-6, max_alpha=6, num_alpha=20, d=1.0, tol=1e-2, max_iter=100):
+    def calculate_for_alphas(self, min_alpha=-6, max_alpha=6, num_alpha=200, d=1.0, tol=1e-6, max_iter=1000):
         """Calculate the probabilities of the nodes in the graph for nonlinear random walk for different values of alpha.
 
         :param float min_alpha: the minimum value of alpha
