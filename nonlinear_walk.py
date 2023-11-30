@@ -132,7 +132,7 @@ class NonlinearRandomWalk:
 
         plt.figure()
         for node in nodes_to_plot:
-            plt.scatter(self.alphas, self.results[:, node], label=self.nodes[node])
+            plt.scatter(self.alphas, self.results[:, node], label=f"{node} - {self.nodes[node]}", s=3)
         plt.legend()
         plt.xlabel(r"$\alpha$")
         plt.ylabel("Probability")
