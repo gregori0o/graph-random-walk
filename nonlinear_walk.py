@@ -19,19 +19,26 @@ class NonlinearRandomWalk:
     :param dict G: the graph
     """
 
-    def __init__(self, G):
+    def __init__(self, G, pos=None, initial_pr=None):
         self.G = G
         self.nodes = G.nodes()
         self.matrix = nx.adjacency_matrix(G, nodelist=self.nodes)
         self.N = G.number_of_nodes()
-        self.pos = nx.spring_layout(G)
+        if pos is None:
+            self.pos = nx.spring_layout(G)
+        else:
+            self.pos = pos
+        if initial_pr is None:
+            self.initial_pr = np.ones(self.N).reshape(self.N, 1) * 1./self.N
+        else:
+            self.initial_pr = np.array(initial_pr)
 
         self.ax = None
         self.alphas = None
         self.prs = None
         self.old_prs = None
 
-    def simulate(self, alpha=1, d=1.0, tol=1e-2, max_iter=100):
+    def simulate(self, alpha=0, d=1.0, tol=1e-2, max_iter=100, log_steps=1):
         """Generator of the probabilities of the nodes in the graph for nonlinear random walk.
 
         :param float alpha: the alpha parameter of random walk
@@ -40,7 +47,7 @@ class NonlinearRandomWalk:
         :param int max_iter: max number of iterations
         """
 
-        pr = np.ones(self.N).reshape(self.N, 1) * 1./self.N
+        pr = self.initial_pr.copy()
 
         # need to repeat the initial step twice
         # for matplotlib animation
@@ -53,10 +60,12 @@ class NonlinearRandomWalk:
             transition_matrix = self.matrix.T * exp_pr.reshape(-1, 1)
             transition_matrix = transition_matrix/transition_matrix.sum(axis=0)
             pr = d * (transition_matrix @ pr) + (1-d)/self.N
-            yield self.nodes, pr, it
+            if it % log_steps == 0:
+                yield self.nodes, pr, it
             err = np.absolute(pr - old_pr).sum()
             if err < tol:
                 break
+        yield self.nodes, pr, "end"
         return pr.reshape(-1), old_pr.reshape(-1)
     
     def _update(self, r):
@@ -69,7 +78,7 @@ class NonlinearRandomWalk:
             node_color=res_values,
             alpha=1,
             node_size=700,
-            cmap=plt.cm.Blues,
+            cmap=plt.cm.YlOrRd,
             vmin=0,
             vmax=0.2
         )
@@ -94,7 +103,8 @@ class NonlinearRandomWalk:
             self._update,
             frames=self.simulate(alpha, d, tol, max_iter),
             interval=1000,
-            blit=True
+            blit=True,
+            cache_frame_data=False
         )
         f.suptitle(f"  Nonlinear Random Walk")
         if filename is None:
