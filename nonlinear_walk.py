@@ -77,15 +77,15 @@ class NonlinearRandomWalk:
             nodelist=res_nodes,
             node_color=res_values,
             alpha=1,
-            node_size=700,
+            node_size=max(10, 5000 / len(self.G)),
             cmap=plt.cm.YlOrRd,
-            vmin=0,
-            vmax=0.2
+            vmin=0.0,
+            vmax=min(np.max(res_values) * 1.2, 1.0)
         )
         self.ax.axis("off")
         self.ax.set_title(f"Iteration {it}")
-        nx.draw_networkx_edges(self.G, self.pos, width=4)
-        nx.draw_networkx_labels(self.G, self.pos, font_size=14)
+        nx.draw_networkx_edges(self.G, self.pos, width=1)
+        # nx.draw_networkx_labels(self.G, self.pos, font_size=14)
         return [plt_nodes, ]
     
     def get_visualization(self, alpha=1, d=1.0, tol=1e-2, max_iter=100, filename=None):
@@ -102,7 +102,7 @@ class NonlinearRandomWalk:
             f,
             self._update,
             frames=self.simulate(alpha, d, tol, max_iter),
-            interval=1000,
+            interval=200,
             blit=True,
             cache_frame_data=False
         )
