@@ -80,7 +80,7 @@ class NonlinearRandomWalk:
             node_size=max(10, 5000 / len(self.G)),
             cmap=plt.cm.YlOrRd,
             vmin=0.0,
-            vmax=min(np.max(res_values) * 1.2, 1.0)
+            vmax=min(np.max(res_values) * 3, 1.0)
         )
         self.ax.axis("off")
         self.ax.set_title(f"Iteration {it}")
@@ -158,5 +158,5 @@ class NonlinearRandomWalk:
         plt.title("Nonlinear Random Walk")
         if filename is None:
             filename = f"nonlinear_random_walk-{datetime.now().isoformat()}.png"
-        plt.savefig(filename)
+        plt.savefig(f"plots/{filename}")
         plt.show()
