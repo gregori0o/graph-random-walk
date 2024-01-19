@@ -71,6 +71,7 @@ class NonlinearRandomWalk:
     def _update(self, r):
         res_nodes, res_values, it = r
         res_values = np.asarray(res_values).ravel()
+        res_values = res_values/np.max(res_values)
         plt_nodes = nx.draw_networkx_nodes(
             self.G, self.pos,
             ax=self.ax,
@@ -80,7 +81,7 @@ class NonlinearRandomWalk:
             node_size=max(10, 5000 / len(self.G)),
             cmap=plt.cm.YlOrRd,
             vmin=0.0,
-            vmax=min(np.max(res_values) * 3, 1.0)
+            vmax=1.0
         )
         self.ax.axis("off")
         self.ax.set_title(f"Iteration {it}")
